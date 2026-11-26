@@ -34,6 +34,11 @@ body{font:16px/1.4 "Instrument Sans",system-ui,sans-serif;color:var(--ink)}
 .t.bad>i{background:var(--red);animation:blink .28s steps(1) infinite}
 @keyframes blink{50%{background:#111114}}
 #ver{position:fixed;right:8px;bottom:6px;font-size:11px;color:#b5b5bc;pointer-events:none}
+#modes{position:fixed;left:50%;bottom:calc(25% + 18px);transform:translateX(-50%);display:flex;gap:4px;padding:4px;background:rgba(17,17,20,.88);border-radius:99px;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+#modes.off{display:none}
+#modes button{min-height:44px;min-width:104px;padding:0 16px;border:0;border-radius:99px;background:transparent;color:#c9c9d1;font:700 15px "Instrument Sans",sans-serif;cursor:pointer}
+#modes button[aria-pressed=true]{background:#fff;color:var(--ink)}
+#modes button:focus-visible{outline:3px solid var(--red);outline-offset:2px}
 #hud{position:fixed;top:max(14px,env(safe-area-inset-top));left:0;right:0;text-align:center;pointer-events:none}
 #score{font:900 64px/1 "Big Shoulders Display",Impact,sans-serif;color:var(--red);-webkit-text-stroke:3px #fff;paint-order:stroke fill}
 #spd{margin-top:6px;display:inline-block;font:700 15px/1 "Instrument Sans",sans-serif;font-variant-numeric:tabular-nums;color:#fff;background:rgba(17,17,20,.82);padding:5px 10px;border-radius:99px}
@@ -54,7 +59,8 @@ body{font:16px/1.4 "Instrument Sans",system-ui,sans-serif;color:var(--ink)}
 </style>
 </head>
 <body>
-<div id="board"></div><div id="ver">v5</div>
+<div id="board"></div><div id="ver">v6</div>
+<div id="modes" role="group" aria-label="Mode"><button id="mArc" aria-pressed="true">Arcade</button><button id="mArp" aria-pressed="false">Arpeggio</button></div>
 <div id="hud"><div id="score">0</div><div id="spd">3.0 tiles/s</div><div id="best">Best 0 · 0.0 tiles/s</div></div>
 <div id="over"><div class="card">
   <h2>Score</h2>
@@ -66,7 +72,7 @@ body{font:16px/1.4 "Instrument Sans",system-ui,sans-serif;color:var(--ink)}
     <span>Best speed</span><b id="fBestSpd">0.0 tiles/s</b>
   </div>
   <button id="again">Play again</button>
-  <div class="tip">Bach · Bourrée in E minor, BWV 996</div>
+  <div class="tip" id="tip">Bach · Bourrée in E minor, BWV 996</div>
 </div></div>
 <script>
 {
@@ -106,6 +112,15 @@ function voice(m,t,len,vel,bright){
   o1.connect(lp);o2.connect(lp);lp.connect(g);g.connect(master);
   const stop=end+rel+.05;o1.start(t);o2.start(t);o1.stop(stop);o2.stop(stop);
 }
+// Arpeggio drill: lanes go 0 1 2 3 2 1, repeating. Chords change every two sweeps: Em, Am, B7, Em.
+const ARP_PAT=[0,1,2,3,2,1];
+const ARP_CH=[[52,55,59,64],[57,60,64,69],[59,63,66,69],[52,55,59,64]],ARP_BASS=[40,45,47,40];
+function playArp(i,spd){
+  if(!ac)return;
+  const t0=ac.currentTime+.005,spr=1/spd,c=Math.floor(i/12)%4;
+  voice(ARP_CH[c][ARP_PAT[i%6]],t0,spr*1.6,.32,7);
+  if(i%12===0)voice(ARP_BASS[c],t0,spr*11,.22,4);
+}
 function playTile(k,spd){
   if(!ac)return;
   const t0=ac.currentTime+.005,spr=1/spd,[,mel,bass]=SONG[k];
@@ -119,11 +134,13 @@ function playFail(){
 }
 
 // ---------- Tiles: index i -> song entry, start row, length, lane ----------
+let mode='arcade';try{if(localStorage.getItem('tp-mode')==='arp')mode='arp'}catch(e){}
 const tileK=i=>i%N;
-const tileS=i=>Math.floor(i/N)*LOOP+STARTS[i%N];
-const tileL=i=>SONG[i%N][0];
+const tileS=i=>mode==='arp'?i:Math.floor(i/N)*LOOP+STARTS[i%N];
+const tileL=i=>mode==='arp'?1:SONG[i%N][0];
 let lanes=[];
 function lane(i){
+  if(mode==='arp')return ARP_PAT[i%6];
   while(lanes.length<=i){
     const p=lanes.length?lanes[lanes.length-1]:-1;
     let l=Math.random()*4|0;if(l===p)l=(l+1+(Math.random()*3|0))%4;
@@ -142,30 +159,43 @@ function resize(){W=board.clientWidth;H=board.clientHeight;laneW=W/4;rowH=H/4}
 addEventListener('resize',resize);resize();
 
 // ---------- State ----------
-const BASE=3,INC=.012;   // rows (eighth notes) per second, and speed gained per tile
+// rows (one-tile steps) per second, and speed gained per tile, for each mode
+const SPEEDS={arcade:[3,.012],arp:[4,.02]};
+const KEYS_BEST={arcade:['bourree-best','bourree-best-speed'],arp:['arp-best','arp-best-speed']};
 const $=id=>document.getElementById(id);
 const scoreEl=$('score'),spdEl=$('spd'),bestEl=$('best'),over=$('over');
 let best=0,bestSpd=0;
-try{best=+localStorage.getItem('bourree-best')||0;bestSpd=+localStorage.getItem('bourree-best-speed')||0}catch(e){}
+function loadBest(){best=0;bestSpd=0;try{best=+localStorage.getItem(KEYS_BEST[mode][0])||0;bestSpd=+localStorage.getItem(KEYS_BEST[mode][1])||0}catch(e){}}
+loadBest();
 let state='ready',offset=0,target=0,next=0,failL=-1,failR=-1,failLen=1,overTimer=0,shownSpd=-1;
-const speed=()=>BASE+next*INC;
+const speed=()=>SPEEDS[mode][0]+next*SPEEDS[mode][1];
 function showBest(){bestEl.textContent='Best '+best+' · '+bestSpd.toFixed(1)+' tiles/s'}
 function showSpd(){const r=Math.round(speed()*10);if(r!==shownSpd){shownSpd=r;spdEl.textContent=(r/10).toFixed(1)+' tiles/s'}}
+const modesEl=$('modes'),mArc=$('mArc'),mArp=$('mArp');
+function setMode(m){
+  mode=m;try{localStorage.setItem('tp-mode',m)}catch(e){}
+  mArc.setAttribute('aria-pressed',m==='arcade');mArp.setAttribute('aria-pressed',m==='arp');
+  $('tip').textContent=m==='arp'?'Arpeggio drill · left to right, right to left':'Bach · Bourrée in E minor, BWV 996';
+  loadBest();reset();
+}
+mArc.addEventListener('click',()=>{initAudio();setMode('arcade')});
+mArp.addEventListener('click',()=>{initAudio();setMode('arp')});
 function reset(){
+  modesEl.classList.remove('off');shownSpd=-1;
   lanes=[];state='ready';offset=0;next=0;failL=failR=-1;
   scoreEl.textContent='0';over.classList.remove('on');showSpd();showBest();
 }
 function hit(){
-  playTile(tileK(next),speed());
+  if(mode==='arp')playArp(next,speed());else playTile(tileK(next),speed());
   next++;scoreEl.textContent=next;showSpd();
-  if(state==='ready')state='play';
+  if(state==='ready'){state='play';modesEl.classList.add('off')}
 }
 function lose(l,row,len,missed){
   state='over';failL=l;failR=row;failLen=len;playFail();
   target=missed?row-.4:offset;
   const v=speed(),newS=next>best,newV=v>bestSpd&&next>0;
   if(newS)best=next;if(newV)bestSpd=v;
-  try{localStorage.setItem('bourree-best',best);localStorage.setItem('bourree-best-speed',bestSpd.toFixed(2))}catch(e){}
+  try{localStorage.setItem(KEYS_BEST[mode][0],best);localStorage.setItem(KEYS_BEST[mode][1],bestSpd.toFixed(2))}catch(e){}
   showBest();
   $('fs').textContent=next;$('fBest').textContent=best;
   $('fSpd').textContent=v.toFixed(1)+' tiles/s';$('fBestSpd').textContent=bestSpd.toFixed(1)+' tiles/s';
@@ -237,7 +267,7 @@ function draw(){
     badCell.style.display='block';badCell.style.height=(failLen*25)+'%';place(badCell,failL,failR,failLen);
   }else badCell.style.display='none';
 }
-reset();
+setMode(mode);
 requestAnimationFrame(frame);
 if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).catch(()=>{});
 }
