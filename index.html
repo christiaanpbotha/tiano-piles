@@ -22,7 +22,7 @@
    LAYOUT: board fills the viewport, score floats at top, overlay card on game over */
 :root{color-scheme:light;--red:#e8304a;--ink:#111114}
 *{box-sizing:border-box;margin:0}
-html,body{height:100%;overflow:hidden;background:#000;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
+html,body{height:100%;overflow:hidden;background:#000;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
 body{font:16px/1.4 "Instrument Sans",system-ui,sans-serif;color:var(--ink)}
 #board{position:fixed;inset:0;overflow:hidden;background:#fbfbf8 linear-gradient(90deg,transparent calc(25% - 1px),#e2e2e6 0 25%,transparent 0 calc(50% - 1px),#e2e2e6 0 50%,transparent 0 calc(75% - 1px),#e2e2e6 0 75%,transparent 0);touch-action:none}
 .t{position:absolute;left:0;top:0;width:25%;height:25%;padding:1px;will-change:transform;display:none}
@@ -39,6 +39,43 @@ body{font:16px/1.4 "Instrument Sans",system-ui,sans-serif;color:var(--ink)}
 #modes button{min-height:44px;min-width:104px;padding:0 16px;border:0;border-radius:99px;background:transparent;color:#c9c9d1;font:700 15px "Instrument Sans",sans-serif;cursor:pointer}
 #modes button[aria-pressed=true]{background:#fff;color:var(--ink)}
 #modes button:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+#cust{position:fixed;left:50%;bottom:calc(25% + 80px);transform:translateX(-50%);min-height:44px;padding:0 18px;border:0;border-radius:99px;background:var(--red);color:#fff;font:700 15px "Instrument Sans",sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.2);cursor:pointer;display:none;align-items:center;gap:8px;white-space:nowrap}
+#cust.on{display:flex}
+#cust small{font-weight:500;opacity:.85;max-width:52vw;overflow:hidden;text-overflow:ellipsis}
+#cust:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+#cfg{position:fixed;inset:0;z-index:5;background:#fbfbf8;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;display:none;user-select:text;-webkit-user-select:text}
+#cfg.on{display:block}
+.cfgIn{max-width:560px;margin:0 auto;padding:max(16px,env(safe-area-inset-top)) 18px 40px}
+.cfgTop{position:sticky;top:0;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:10px;background:#fbfbf8;padding:10px 0;border-bottom:1px solid #e6e6ea}
+.cfgTop h2{font:900 34px/1 "Big Shoulders Display",Impact,sans-serif}
+.cfgTop .row{display:flex;gap:8px}
+.btn{min-height:44px;padding:0 16px;border:1px solid #d6d6dc;border-radius:12px;background:#fff;color:var(--ink);font:700 15px "Instrument Sans",sans-serif;cursor:pointer}
+.btn.dark{background:var(--ink);color:#fff;border-color:var(--ink)}
+.btn.red{background:var(--red);color:#fff;border-color:var(--red)}
+.btn:focus-visible,#cfg select:focus-visible,#cfg input:focus-visible,#cfg textarea:focus-visible{outline:3px solid var(--red);outline-offset:1px}
+#cfg section{padding:18px 0;border-bottom:1px solid #ececf0}
+#cfg h3{font:700 13px "Instrument Sans",sans-serif;color:#8a8a93;margin-bottom:10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+#cfg label{display:grid;gap:4px;font-size:14px;font-weight:700;color:#3a3a42}
+#cfg select,#cfg input[type=number],#cfg textarea{width:100%;min-height:44px;padding:8px 10px;border:1px solid #d6d6dc;border-radius:10px;background:#fff;color:var(--ink);font:500 16px "Instrument Sans",sans-serif}
+#cfg textarea{min-height:64px;resize:vertical;font:600 18px/1.4 ui-monospace,Menlo,monospace}
+#cfg input[type=range]{width:100%;accent-color:var(--red);min-height:32px}
+.chk{display:flex!important;grid-template-columns:none;align-items:center;gap:10px;min-height:44px}
+.chk input{width:22px;height:22px;accent-color:var(--red)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chips button{min-height:36px;padding:0 12px;border:1px solid #d6d6dc;border-radius:99px;background:#fff;font:600 13px "Instrument Sans",sans-serif;color:#3a3a42;cursor:pointer}
+#chordList{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.cc{border-radius:10px;background:var(--ink);color:#fff;padding:7px 10px;min-width:64px}
+.cc b{display:block;font:900 20px/1 "Big Shoulders Display",Impact,sans-serif}
+.cc span{font-size:12px;color:#c9c9d1}
+.cc em{font-style:normal;font-size:11px;color:#8a8a93;display:block}
+.err{color:var(--red);font-weight:700;font-size:14px;margin-top:8px}
+.val{font-variant-numeric:tabular-nums;color:var(--red)}
+#cfg details{margin-top:12px;font-size:14px;color:#55555e}
+#cfg summary{cursor:pointer;font-weight:700;color:var(--ink);min-height:32px}
+#cfg code{background:#efeff2;border-radius:4px;padding:1px 5px;font-size:13px}
+#cfg dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin-top:8px}
+#cfg dt{font-weight:700;color:var(--ink)}
 #hud{position:fixed;top:max(14px,env(safe-area-inset-top));left:0;right:0;text-align:center;pointer-events:none}
 #score{font:900 64px/1 "Big Shoulders Display",Impact,sans-serif;color:var(--red);-webkit-text-stroke:3px #fff;paint-order:stroke fill}
 #spd{margin-top:6px;display:inline-block;font:700 15px/1 "Instrument Sans",sans-serif;font-variant-numeric:tabular-nums;color:#fff;background:rgba(17,17,20,.82);padding:5px 10px;border-radius:99px}
@@ -59,9 +96,65 @@ body{font:16px/1.4 "Instrument Sans",system-ui,sans-serif;color:var(--ink)}
 </style>
 </head>
 <body>
-<div id="board"></div><div id="ver">v6</div>
+<div id="board"></div><div id="ver">v7</div>
+<button id="cust" aria-haspopup="dialog">Customize <small id="custSum"></small></button>
 <div id="modes" role="group" aria-label="Mode"><button id="mArc" aria-pressed="true">Arcade</button><button id="mArp" aria-pressed="false">Arpeggio</button></div>
 <div id="hud"><div id="score">0</div><div id="spd">3.0 tiles/s</div><div id="best">Best 0 · 0.0 tiles/s</div></div>
+<div id="cfg" role="dialog" aria-modal="true" aria-labelledby="cfgTitle"><div class="cfgIn">
+  <div class="cfgTop"><h2 id="cfgTitle">Arpeggio</h2><div class="row"><button class="btn" id="hear">Hear it</button><button class="btn dark" id="done">Done</button></div></div>
+  <section>
+    <h3>Key and mode</h3>
+    <div class="grid">
+      <label>Key<select id="cKey"></select></label>
+      <label>Mode<select id="cMode"></select></label>
+      <label>Octave<select id="cOct"><option value="2">Low (2)</option><option value="3">Middle-low (3)</option><option value="4">Middle (4)</option><option value="5">High (5)</option></select></label>
+    </div>
+  </section>
+  <section>
+    <h3>Chord progression</h3>
+    <label for="cProg" style="display:block">Type chords, separated by spaces</label>
+    <textarea id="cProg" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off"></textarea>
+    <div class="chips" id="presets"></div>
+    <div id="chordList"></div><div class="err" id="cErr"></div>
+    <div class="grid" style="margin-top:12px">
+      <label>Chord quality<select id="cQual"><option value="written">As written (case and symbols)</option><option value="mode">From the mode (diatonic)</option></select></label>
+      <label>Diatonic stack<select id="cExt"><option value="3">Triads</option><option value="4">7ths</option><option value="5">9ths</option><option value="6">11ths</option><option value="7">13ths</option></select></label>
+    </div>
+    <details><summary>How to write chords</summary>
+      <dl>
+        <dt>Roman</dt><dd><code>I</code> uppercase = major, <code>vi</code> lowercase = minor. Built on the degrees of your mode.</dd>
+        <dt>Accidentals</dt><dd><code>bVII</code> <code>bVI</code> <code>#iv°</code></dd>
+        <dt>Symbols</dt><dd><code>7</code> <code>maj7</code> <code>m7b5</code> <code>ø</code> <code>°</code> <code>°7</code> <code>+</code> <code>sus2</code> <code>sus4</code> <code>6</code> <code>6/9</code> <code>9</code> <code>maj9</code> <code>11</code> <code>13</code> <code>add9</code> <code>add#11</code> <code>b9</code> <code>#9</code> <code>#11</code> <code>b13</code> <code>b5</code> <code>#5</code> <code>no3</code></dd>
+        <dt>Secondary</dt><dd><code>V/V</code> <code>V7/IV</code> <code>vii°7/ii</code></dd>
+        <dt>Chord names</dt><dd><code>Em7</code> <code>Cmaj9</code> <code>F#m11</code> <code>Bb7/D</code> <code>Am(maj7)</code> <code>G7b9</code></dd>
+        <dt>From the mode</dt><dd>Plain numerals take their notes from the mode, stacked to the depth you pick. <code>V9</code> stacks to a 9th.</dd>
+      </dl>
+    </details>
+  </section>
+  <section>
+    <h3>Arpeggio</h3>
+    <div class="grid">
+      <label>Direction<select id="cDir"><option value="updown">Up then down</option><option value="downup">Down then up</option><option value="up">Up only</option><option value="down">Down only</option><option value="random">Random</option></select></label>
+      <label>Range<select id="cOcts"><option value="1">1 octave</option><option value="2">2 octaves</option><option value="3">3 octaves</option></select></label>
+      <label>Tiles per chord<select id="cTpc"></select></label>
+      <label>Sound<select id="cTim"><option value="harpsichord">Harpsichord</option><option value="piano">Piano</option><option value="soft">Soft</option><option value="organ">Organ</option><option value="bell">Bell</option></select></label>
+    </div>
+    <label class="chk"><input type="checkbox" id="cTop"> Finish on the root an octave up</label>
+    <label class="chk"><input type="checkbox" id="cBass"> Bass note on each chord change</label>
+  </section>
+  <section>
+    <h3>Lanes</h3>
+    <label>Lane pattern<select id="cLanes"><option value="sweep">Sweep 1 2 3 4 3 2</option><option value="bounce">Sweep with repeats 1 2 3 4 4 3 2 1</option><option value="up">Left to right 1 2 3 4</option><option value="down">Right to left 4 3 2 1</option><option value="notes">Follow the notes (high notes go right)</option><option value="random">Random</option></select></label>
+  </section>
+  <section>
+    <h3>Speed</h3>
+    <div class="grid">
+      <label>Start speed <span class="val" id="vStart"></span><input type="range" id="cStart" min="1" max="14" step="0.5"></label>
+      <label>Speed-up per tile <span class="val" id="vAcc"></span><input type="range" id="cAcc" min="0" max="0.08" step="0.002"></label>
+    </div>
+  </section>
+  <section style="border:0"><button class="btn" id="cReset">Reset to default</button></section>
+</div></div>
 <div id="over"><div class="card">
   <h2>Score</h2>
   <div class="big" id="fs">0</div>
@@ -96,30 +189,204 @@ function initAudio(){
   const comp=ac.createDynamicsCompressor();comp.threshold.value=-14;comp.ratio.value=4;
   master.connect(comp);comp.connect(ac.destination);
 }
-// A plucked, harpsichord-like voice. Length follows the note's real duration at the current speed,
+// Voices. Length follows the note's real duration at the current speed,
 // so the music stays clean and in time however fast the tiles fall.
-function voice(m,t,len,vel,bright){
-  const f=FREQ[m],end=t+Math.max(.07,len),rel=Math.min(.12,len*.5+.03);
-  const g=ac.createGain(),lp=ac.createBiquadFilter();
+const TIMBRES={
+  harpsichord:{w:['sawtooth','triangle'],r:1,mix:1,bright:1,sus:.35,dec:.09},
+  piano:{w:['triangle','sine'],r:2,mix:.35,bright:.8,sus:.12,dec:.25},
+  soft:{w:['sine','triangle'],r:2,mix:.15,bright:.5,sus:.75,dec:.3,att:.02},
+  organ:{w:['square','sine'],r:2,mix:.4,bright:.45,sus:.8,dec:.05,flat:1},
+  bell:{w:['sine','sine'],r:2.76,mix:.5,bright:1.2,sus:.06,dec:.5}
+};
+function voice(m,t,len,vel,bright,tim,dest){
+  const T=TIMBRES[tim]||TIMBRES.harpsichord,f=FREQ[m],end=t+Math.max(.07,len),rel=Math.min(.12,len*.5+.03);
+  const g=ac.createGain(),lp=ac.createBiquadFilter(),att=T.att||.004;
   lp.type='lowpass';lp.Q.value=.7;
-  lp.frequency.setValueAtTime(Math.min(12000,f*bright),t);
-  lp.frequency.exponentialRampToValueAtTime(Math.max(f*1.5,300),t+Math.min(.5,len+.1));
-  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vel,t+.004);
-  g.gain.setTargetAtTime(vel*.35,t+.004,.09+Math.min(len,.6)*.25);
+  lp.frequency.setValueAtTime(Math.min(12000,f*bright*T.bright),t);
+  if(!T.flat)lp.frequency.exponentialRampToValueAtTime(Math.max(f*1.5,300),t+Math.min(.5,len+.1));
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vel,t+att);
+  g.gain.setTargetAtTime(vel*T.sus,t+att,T.dec+Math.min(len,.6)*.25);
   g.gain.setTargetAtTime(0,end,rel/3);
-  const o1=ac.createOscillator();o1.type='sawtooth';o1.frequency.value=f;
-  const o2=ac.createOscillator();o2.type='triangle';o2.frequency.value=f;o2.detune.value=4;
-  o1.connect(lp);o2.connect(lp);lp.connect(g);g.connect(master);
+  const o1=ac.createOscillator();o1.type=T.w[0];o1.frequency.value=f;
+  const o2=ac.createOscillator();o2.type=T.w[1];o2.frequency.value=f*T.r;o2.detune.value=T.r===1?4:0;
+  const g2=ac.createGain();g2.gain.value=T.mix;
+  o1.connect(lp);o2.connect(g2);g2.connect(lp);lp.connect(g);g.connect(dest||master);
   const stop=end+rel+.05;o1.start(t);o2.start(t);o1.stop(stop);o2.stop(stop);
 }
-// Arpeggio drill: lanes go 0 1 2 3 2 1, repeating. Chords change every two sweeps: Em, Am, B7, Em.
-const ARP_PAT=[0,1,2,3,2,1];
-const ARP_CH=[[52,55,59,64],[57,60,64,69],[59,63,66,69],[52,55,59,64]],ARP_BASS=[40,45,47,40];
-function playArp(i,spd){
+// ---------- Arpeggio theory: keys, modes, chord parsing ----------
+const SHARP=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'],FLAT=['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
+const FLAT_KEYS=new Set([1,3,5,8,10]);   // Db Eb F Ab Bb spell with flats
+const MODES={
+  ionian:['Ionian (major)',[0,2,4,5,7,9,11]],dorian:['Dorian',[0,2,3,5,7,9,10]],
+  phrygian:['Phrygian',[0,1,3,5,7,8,10]],lydian:['Lydian',[0,2,4,6,7,9,11]],
+  mixolydian:['Mixolydian',[0,2,4,5,7,9,10]],aeolian:['Aeolian (natural minor)',[0,2,3,5,7,8,10]],
+  locrian:['Locrian',[0,1,3,5,6,8,10]],harmonic:['Harmonic minor',[0,2,3,5,7,8,11]],
+  melodic:['Melodic minor',[0,2,3,5,7,9,11]],phrygdom:['Phrygian dominant',[0,1,4,5,7,8,10]],
+  dblharm:['Double harmonic',[0,1,4,5,7,8,11]],wholetone:['Whole tone',[0,2,4,6,8,10,12]]
+};
+const NOTE_PC={C:0,D:2,E:4,F:5,G:7,A:9,B:11};
+const LET='CDEFGAB',LPC=[0,2,4,5,7,9,11];
+const PARENT={ionian:0,dorian:2,phrygian:4,lydian:5,mixolydian:7,aeolian:9,locrian:11,harmonic:9,melodic:9,phrygdom:4,dblharm:4,wholetone:0};
+// Spell a pitch on a given letter: letter index 0-6, pitch class -> "Bb", "F#", "Ebb" ...
+function spell(li,pc){let d=((pc-LPC[((li%7)+7)%7])%12+12)%12;if(d>6)d-=12;return LET[((li%7)+7)%7]+(d>0?'#'.repeat(d):'b'.repeat(-d))}
+// Key's own letter, chosen from the parent major key so flat keys read as flats
+function keyLetter(cfg){const par=((cfg.key-PARENT[cfg.mode])%12+12)%12;const nm=([5,10,3,8,1].includes(par)?FLAT:SHARP)[cfg.key];return LET.indexOf(nm[0])}
+function degOf(x,set){
+  const y=x%12,hi=x>=12;
+  if(hi)return {1:2,2:2,3:2,5:4,6:4,8:6,9:6}[y]||{0:1,4:3,7:5,10:7,11:7}[y];
+  if(y===6)return set.has(7)?4:5;
+  if(y===8)return set.has(7)?6:5;
+  if(y===9)return set.has(6)&&set.has(3)&&!set.has(10)&&!set.has(11)?7:6;
+  return [1,2,2,3,3,4,5,5,6,6,7,7][y];
+}
+const ROMAN_U=['VII','VI','IV','V','III','II','I'],ROMAN_DEG={I:0,II:1,III:2,IV:3,V:4,VI:5,VII:6};
+const noteName=(pc,key)=>(FLAT_KEYS.has(((key%12)+12)%12)?FLAT:SHARP)[((pc%12)+12)%12];
+const EXT={9:[14],11:[14,17],13:[14,17,21]},DEG_SEMI={2:2,4:5,6:9,9:14,11:17,13:21};
+
+// Suffix after the root: 7 maj7 m7b5 ø ° dim7 + aug sus2 sus4 6 9 maj9 11 13 add9 b9 #9 #11 b13 b5 #5 ...
+function parseSuffix(suf,minor){
+  let s=suf.replace(/♭/g,'b').replace(/♯/g,'#').replace(/Δ/g,'maj').replace(/[()\s,]/g,'');
+  let third=minor?3:4,fifth=7,sev=null,ext=[],sus=null;const add=[],alt=[];let m;
+  const take=re=>{const r=s.match(re);if(r){s=s.slice(r[0].length);return r}return null};
+  while(s.length){
+    if(take(/^(ø|hdim|m7b5)7?/)){third=3;fifth=6;sev=10;continue}
+    if(m=take(/^(°|o|dim)(7)?/)){third=3;fifth=6;if(m[2])sev=9;continue}
+    if(take(/^(\+|aug)/)){fifth=8;continue}
+    if(m=take(/^(maj|ma|M)(7|9|11|13)?/)){if(m[2]){sev=11;ext=EXT[m[2]]||[]}continue}
+    if(m=take(/^(13|11|9|7)/)){if(sev===null)sev=10;ext=EXT[m[1]]||[];continue}
+    if(take(/^6\/?9/)){add.push(9,14);continue}
+    if(take(/^6/)){add.push(9);continue}
+    if(m=take(/^sus(2|4)?/)){sus=m[1]==='2'?2:5;continue}
+    if(m=take(/^add(b|#)?(2|4|6|9|11|13)/)){add.push(DEG_SEMI[m[2]]+(m[1]==='b'?-1:m[1]==='#'?1:0));continue}
+    if(m=take(/^(b|#)(5|9|11|13)/)){alt.push([+m[2],m[1]==='b'?-1:1]);continue}
+    if(take(/^(no3|omit3)/)){third=null;continue}
+    return null;
+  }
+  let t=[0];if(sus!==null)t.push(sus);else if(third!==null)t.push(third);
+  t.push(fifth);if(sev!==null)t.push(sev);t.push(...ext,...add);
+  for(const [d,a] of alt){
+    if(d===5){t=t.filter(x=>x!==7&&x!==6&&x!==8);t.push(7+a)}
+    else{const b=DEG_SEMI[d];t=t.filter(x=>x!==b);t.push(b+a)}
+  }
+  return [...new Set(t)].sort((a,b)=>a-b);
+}
+// Stack thirds inside the mode from a degree: n=3 triad, 4 seventh, 5 ninth, 6 eleventh, 7 thirteenth
+function stackMode(deg,n,sc){
+  const r=sc[deg%7]+12*Math.floor(deg/7),t=[];
+  for(let k=0;k<n;k++){const i=deg+2*k;t.push(sc[i%7]+12*Math.floor(i/7)-r)}
+  return t;
+}
+function parseRoman(tok){
+  const m=tok.match(/^([b#♭♯]*)(VII|VI|IV|V|III|II|I|vii|vi|iv|v|iii|ii|i)(.*)$/);
+  if(!m)return null;
+  const acc=[...m[1]].reduce((a,c)=>a+(c==='b'||c==='♭'?-1:1),0);
+  return {acc,deg:ROMAN_DEG[m[2].toUpperCase()],minor:m[2]===m[2].toLowerCase(),suf:m[3]};
+}
+function parseNote(tok){
+  const m=tok.match(/^([A-G])([b#♭♯]*)(.*)$/);if(!m)return null;
+  const acc=[...m[2]].reduce((a,c)=>a+(c==='b'||c==='♭'?-1:1),0);
+  return {pc:NOTE_PC[m[1]]+acc,li:LET.indexOf(m[1]),rest:m[3]};
+}
+// One chord token -> {root: semitones above key root, tones: intervals, bass: semitones above key root or null}
+function parseChord(tok,cfg){
+  const sc=MODES[cfg.mode][1];let [main,slash]=tok.split(/\/(?![\d])/);
+  let base=0,scale=sc,bass=null,baseL=0,bassL=null;const kl=keyLetter(cfg);
+  if(slash!==undefined){
+    const rs=parseRoman(slash);
+    if(rs&&rs.suf===''){base=sc[rs.deg]+rs.acc;scale=MODES.ionian[1];baseL=rs.deg}   // secondary chord: V/V, vii°/ii ...
+    else{const n=parseNote(slash);if(!n||n.rest)return null;bass=n.pc-cfg.key;bassL=n.li}
+  }
+  const r=parseRoman(main);
+  if(r){
+    const root=base+scale[r.deg]+r.acc;
+    const ext=r.suf.match(/^(7|9|11|13)$/);
+    if(cfg.quality==='mode'&&!slash&&(r.suf===''||ext)){
+      const n=ext?{7:4,9:5,11:6,13:7}[ext[1]]:+cfg.ext;
+      return {root:sc[r.deg]+r.acc,li:kl+r.deg,tones:stackMode(r.deg,n,sc),bass,bassL};
+    }
+    const tones=parseSuffix(r.suf,r.minor);if(!tones)return null;
+    return {root,li:kl+baseL+r.deg,tones,bass,bassL};
+  }
+  const n=parseNote(main);if(!n)return null;
+  let rest=n.rest,minor=false;const mm=rest.match(/^(min|mi|m(?!aj|a)|-)/);
+  if(mm){minor=true;rest=rest.slice(mm[0].length)}
+  const tones=parseSuffix(rest,minor);if(!tones)return null;
+  return {root:(((n.pc-cfg.key)%12)+12)%12,li:n.li,tones,bass,bassL};
+}
+function chordName(t){
+  const S=new Set(t),h=x=>S.has(x),used=new Set([0]),u=(...a)=>a.forEach(x=>used.add(x));
+  const M3=h(4),m3=h(3);let q,sev7=h(10)||h(11);
+  if(m3&&h(6)&&!h(7)){
+    if(h(9)&&!sev7){q='dim7';u(3,6,9)}else if(h(10)){q='m7b5';u(3,6,10)}else{q='dim';u(3,6)}
+  }else if(M3&&h(8)&&!h(7)){q=h(10)?'aug7':'aug';u(4,8,10)}
+  else{
+    const tri=M3?'':m3?'m':h(5)?'sus4':h(2)?'sus2':'5';u(M3?4:m3?3:h(5)?5:h(2)?2:0,7);
+    const ext=sev7?(h(21)?'13':h(17)?'11':h(14)?'9':'7'):'';let sev='';
+    if(h(11))sev=(m3?'(maj':'maj')+ext+(m3?')':'');else if(h(10))sev=ext;
+    else if(h(9)){sev=h(14)?'6/9':'6';u(9,14)}
+    if(sev7){u(10,11);if(ext!=='7')u(14);if(ext==='11'||ext==='13')u(17);if(ext==='13')u(21)}
+    q=tri.startsWith('sus')?sev+tri:tri+sev;
+  }
+  const AL={1:'b9',13:'b9',15:'#9',18:'#11',20:'b13',6:'b5',8:'#5'},AD={14:'9',17:'11',21:'13',2:'2',5:'4',9:'6',18:'#11',20:'b13',13:'b9',15:'#9'};
+  return q+t.filter(x=>!used.has(x)).map(x=>sev7&&AL[x]?AL[x]:'add'+(AD[x]||x)).join('');
+}
+// Settings -> playable arpeggio: per chord a note sequence, a lane per tile, a bass note
+function compileArp(cfg){
+  const toks=cfg.prog.trim().split(/[\s,|]+/).filter(Boolean),chords=[],errors=[];
+  const keyBase=12*(+cfg.oct+1)+cfg.key;
+  for(const tok of toks){
+    const c=parseChord(tok,cfg);
+    if(!c){errors.push(tok);continue}
+    const rootMidi=keyBase+c.root;
+    let arr=[];for(let o=0;o<+cfg.octs;o++)for(const x of c.tones)arr.push(rootMidi+x+12*o);
+    if(cfg.top)arr.push(rootMidi+12*+cfg.octs);
+    arr=[...new Set(arr)].sort((a,b)=>a-b);
+    const rev=arr.slice().reverse();
+    let seq;
+    switch(cfg.dir){
+      case 'up':seq=arr;break;case 'down':seq=rev;break;
+      case 'downup':seq=arr.length>2?rev.concat(arr.slice(1,-1)):rev;break;
+      default:seq=arr.length>2?arr.concat(rev.slice(1,-1)):arr;
+    }
+    let b=c.bass!==null?keyBase+((c.bass%12)+12)%12:rootMidi;while(b>=rootMidi)b-=12;if(b>=rootMidi-6)b-=12;
+    const S=new Set(c.tones),rpc=c.root+cfg.key;
+    const names=c.tones.map(x=>spell(c.li+degOf(x,S)-1,rpc+x));
+    const bassNm=c.bass!==null?'/'+spell(c.bassL,c.bass+cfg.key):'';
+    chords.push({tok,seq,arr,bass:b,name:names[0]+chordName(c.tones)+bassNm,notes:[...new Set(names)].join(' ')});
+  }
+  return {chords,errors};
+}
+
+// ---------- Arpeggio settings ----------
+const ARP_DEFAULT={key:4,oct:3,mode:'aeolian',prog:'i iv V7 i',quality:'written',ext:'4',dir:'updown',octs:1,top:true,tpc:12,bass:true,lanes:'sweep',start:4,accel:.02,timbre:'harpsichord'};
+let arpCfg={...ARP_DEFAULT};
+try{const j=JSON.parse(localStorage.getItem('tp-arp-cfg')||'null');if(j&&typeof j==='object')arpCfg={...ARP_DEFAULT,...j}}catch(e){}
+if(!MODES[arpCfg.mode])arpCfg.mode='aeolian';
+let ARP=compileArp(arpCfg);if(!ARP.chords.length)ARP=compileArp(ARP_DEFAULT);
+const arpRand=[],arpRandLane=[];
+function arpChord(i){return ARP.chords[Math.floor(i/arpCfg.tpc)%ARP.chords.length]}
+function arpNote(i){
+  const c=arpChord(i),j=i%arpCfg.tpc;
+  if(arpCfg.dir==='random'){
+    while(arpRand.length<=i){const prev=arpRand[arpRand.length-1];let k=Math.random()*64|0;arpRand.push(k)}
+    const n=c.arr.length;let k=arpRand[i]%n;
+    if(n>1&&i>0&&j>0&&c.arr[k]===arpNote(i-1))k=(k+1)%n;
+    return c.arr[k];
+  }
+  return c.seq[j%c.seq.length];
+}
+const LANE_PATS={sweep:[0,1,2,3,2,1],bounce:[0,1,2,3,3,2,1,0],up:[0,1,2,3],down:[3,2,1,0]};
+function arpLane(i){
+  const pat=LANE_PATS[arpCfg.lanes];if(pat)return pat[i%pat.length];
+  if(arpCfg.lanes==='notes'){const c=arpChord(i),n=c.arr.length;return n>1?Math.round(c.arr.indexOf(arpNote(i))*3/(n-1)):0}
+  while(arpRandLane.length<=i){const p=arpRandLane.length?arpRandLane[arpRandLane.length-1]:-1;let l=Math.random()*4|0;if(l===p)l=(l+1+(Math.random()*3|0))%4;arpRandLane.push(l)}
+  return arpRandLane[i];
+}
+function playArp(i,spd,dest){
   if(!ac)return;
-  const t0=ac.currentTime+.005,spr=1/spd,c=Math.floor(i/12)%4;
-  voice(ARP_CH[c][ARP_PAT[i%6]],t0,spr*1.6,.32,7);
-  if(i%12===0)voice(ARP_BASS[c],t0,spr*11,.22,4);
+  const t0=ac.currentTime+.005,spr=1/spd;
+  voice(arpNote(i),t0,spr*1.6,.32,7,arpCfg.timbre,dest);
+  if(arpCfg.bass&&i%arpCfg.tpc===0)voice(arpChord(i).bass,t0,spr*(arpCfg.tpc-.5),.2,4,arpCfg.timbre,dest);
 }
 function playTile(k,spd){
   if(!ac)return;
@@ -140,7 +407,7 @@ const tileS=i=>mode==='arp'?i:Math.floor(i/N)*LOOP+STARTS[i%N];
 const tileL=i=>mode==='arp'?1:SONG[i%N][0];
 let lanes=[];
 function lane(i){
-  if(mode==='arp')return ARP_PAT[i%6];
+  if(mode==='arp')return arpLane(i);
   while(lanes.length<=i){
     const p=lanes.length?lanes[lanes.length-1]:-1;
     let l=Math.random()*4|0;if(l===p)l=(l+1+(Math.random()*3|0))%4;
@@ -168,27 +435,27 @@ let best=0,bestSpd=0;
 function loadBest(){best=0;bestSpd=0;try{best=+localStorage.getItem(KEYS_BEST[mode][0])||0;bestSpd=+localStorage.getItem(KEYS_BEST[mode][1])||0}catch(e){}}
 loadBest();
 let state='ready',offset=0,target=0,next=0,failL=-1,failR=-1,failLen=1,overTimer=0,shownSpd=-1;
-const speed=()=>SPEEDS[mode][0]+next*SPEEDS[mode][1];
+const speed=()=>mode==='arp'?+arpCfg.start+next*arpCfg.accel:SPEEDS[mode][0]+next*SPEEDS[mode][1];
 function showBest(){bestEl.textContent='Best '+best+' · '+bestSpd.toFixed(1)+' tiles/s'}
 function showSpd(){const r=Math.round(speed()*10);if(r!==shownSpd){shownSpd=r;spdEl.textContent=(r/10).toFixed(1)+' tiles/s'}}
 const modesEl=$('modes'),mArc=$('mArc'),mArp=$('mArp');
 function setMode(m){
   mode=m;try{localStorage.setItem('tp-mode',m)}catch(e){}
   mArc.setAttribute('aria-pressed',m==='arcade');mArp.setAttribute('aria-pressed',m==='arp');
-  $('tip').textContent=m==='arp'?'Arpeggio drill · left to right, right to left':'Bach · Bourrée in E minor, BWV 996';
+  $('tip').textContent=m==='arp'?arpSummary():'Bach · Bourrée in E minor, BWV 996';
   loadBest();reset();
 }
 mArc.addEventListener('click',()=>{initAudio();setMode('arcade')});
 mArp.addEventListener('click',()=>{initAudio();setMode('arp')});
 function reset(){
-  modesEl.classList.remove('off');shownSpd=-1;
+  modesEl.classList.remove('off');custEl.classList.toggle('on',mode==='arp');arpRand.length=0;arpRandLane.length=0;shownSpd=-1;
   lanes=[];state='ready';offset=0;next=0;failL=failR=-1;
   scoreEl.textContent='0';over.classList.remove('on');showSpd();showBest();
 }
 function hit(){
   if(mode==='arp')playArp(next,speed());else playTile(tileK(next),speed());
   next++;scoreEl.textContent=next;showSpd();
-  if(state==='ready'){state='play';modesEl.classList.add('off')}
+  if(state==='ready'){state='play';modesEl.classList.add('off');custEl.classList.remove('on')}
 }
 function lose(l,row,len,missed){
   state='over';failL=l;failR=row;failLen=len;playFail();
@@ -224,7 +491,7 @@ board.addEventListener('pointerdown',e=>{
 },{passive:false});
 const KEYS={KeyD:0,KeyF:1,KeyJ:2,KeyK:3,Digit1:0,Digit2:1,Digit3:2,Digit4:3};
 addEventListener('keydown',e=>{
-  if(e.repeat)return;
+  if(e.repeat||cfgEl.classList.contains('on')||/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;
   if(e.code in KEYS){e.preventDefault();press(KEYS[e.code],H-rowH*.5)}
   else if((e.code==='Space'||e.code==='Enter')&&state==='over'&&over.classList.contains('on')){e.preventDefault();reset()}
 });
@@ -267,6 +534,89 @@ function draw(){
     badCell.style.display='block';badCell.style.height=(failLen*25)+'%';place(badCell,failL,failR,failLen);
   }else badCell.style.display='none';
 }
+// ---------- Customize panel ----------
+const cfgEl=$('cfg'),custEl=$('cust');
+const PRESETS=[
+  ['Default · i iv V7 i',{prog:'i iv V7 i',mode:'aeolian',quality:'written'}],
+  ['Pop · I V vi IV',{prog:'I V vi IV',mode:'ionian',quality:'written'}],
+  ['Jazz ii-V-I',{prog:'ii7 V7 Imaj7 Imaj7',mode:'ionian',quality:'written'}],
+  ['Lush 9ths and 11ths',{prog:'Imaj9 vi9 ii11 V13',mode:'ionian',quality:'written'}],
+  ['Andalusian',{prog:'i bVII bVI V7',mode:'aeolian',quality:'written'}],
+  ['Canon',{prog:'I V vi iii IV I IV V',mode:'ionian',quality:'written'}],
+  ['Your mix',{prog:'I VI v ii II II7 imaj7',mode:'aeolian',quality:'written'}],
+  ['Dorian vamp',{prog:'i7 IV7',mode:'dorian',quality:'written'}],
+  ['Diatonic 7ths',{prog:'I ii iii IV V vi vii',mode:'ionian',quality:'mode',ext:'4'}],
+  ['Secondary dominants',{prog:'I V7/vi vi V7/V V7 I',mode:'ionian',quality:'written'}],
+  ['Neo-soul',{prog:'ii9 V13 Imaj9 vi11',mode:'ionian',quality:'written'}]
+];
+const keyNames=['C','C# / Db','D','Eb','E','F','F# / Gb','G','Ab','A','Bb','B'];
+$('cKey').innerHTML=keyNames.map((n,i)=>'<option value="'+i+'">'+n+'</option>').join('');
+$('cMode').innerHTML=Object.keys(MODES).map(k=>'<option value="'+k+'">'+MODES[k][0]+'</option>').join('');
+$('cTpc').innerHTML=[2,3,4,5,6,8,10,12,16,24,32].map(n=>'<option value="'+n+'">'+n+'</option>').join('');
+$('presets').innerHTML=PRESETS.map((p,i)=>'<button type="button" data-p="'+i+'">'+p[0]+'</button>').join('');
+const FIELDS={cKey:'key',cMode:'mode',cOct:'oct',cProg:'prog',cQual:'quality',cExt:'ext',cDir:'dir',cOcts:'octs',cTpc:'tpc',cTim:'timbre',cLanes:'lanes',cStart:'start',cAcc:'accel'};
+const NUMERIC=new Set(['key','oct','octs','tpc','start','accel']);
+function esc(x){return String(x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function arpSummary(){
+  const k=(FLAT_KEYS.has(arpCfg.key)?FLAT:SHARP)[arpCfg.key];
+  return k+' '+MODES[arpCfg.mode][0].replace(/ \(.*\)/,'')+' · '+ARP.chords.map(c=>c.tok).join(' ');
+}
+function fillForm(){
+  for(const id in FIELDS)$(id).value=arpCfg[FIELDS[id]];
+  $('cTop').checked=!!arpCfg.top;$('cBass').checked=!!arpCfg.bass;
+  $('cExt').disabled=arpCfg.quality!=='mode';
+  renderArp();
+}
+function renderArp(){
+  $('vStart').textContent=(+arpCfg.start).toFixed(1)+' tiles/s';
+  $('vAcc').textContent='+'+(+arpCfg.accel).toFixed(3);
+  $('chordList').innerHTML=ARP.chords.map(c=>'<div class="cc"><em>'+esc(c.tok)+'</em><b>'+esc(c.name)+'</b><span>'+esc(c.notes)+'</span></div>').join('');
+  $('cErr').textContent=ARP.errors.length?'Couldn\'t read: '+ARP.errors.join(', '):(ARP.chords.length?'':'Add at least one chord.');
+  $('custSum').textContent=arpSummary();
+}
+function applyCfg(){
+  const c=compileArp(arpCfg);ARP=c.chords.length?c:{chords:compileArp(ARP_DEFAULT).chords,errors:c.errors};
+  if(!c.chords.length)ARP.errors=c.errors;
+  try{localStorage.setItem('tp-arp-cfg',JSON.stringify(arpCfg))}catch(e){}
+  renderArp();
+}
+function readForm(){
+  for(const id in FIELDS){const v=$(id).value;arpCfg[FIELDS[id]]=NUMERIC.has(FIELDS[id])?+v:v}
+  arpCfg.top=$('cTop').checked;arpCfg.bass=$('cBass').checked;
+  $('cExt').disabled=arpCfg.quality!=='mode';
+  applyCfg();
+}
+cfgEl.addEventListener('input',e=>{if(e.target.id!=='cProg')readForm()});
+cfgEl.addEventListener('change',readForm);
+let progT=0;$('cProg').addEventListener('input',()=>{clearTimeout(progT);progT=setTimeout(readForm,250)});
+$('presets').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-p]');if(!b)return;
+  Object.assign(arpCfg,PRESETS[+b.dataset.p][1]);fillForm();applyCfg();
+});
+$('cReset').addEventListener('click',()=>{arpCfg={...ARP_DEFAULT};fillForm();applyCfg()});
+// Preview: one pass of the progression at the start speed
+let previewBus=null;
+function stopPreview(){if(previewBus){try{previewBus.disconnect()}catch(e){}previewBus=null}$('hear').textContent='Hear it';$('hear').classList.remove('red')}
+$('hear').addEventListener('click',()=>{
+  initAudio();if(!ac)return;
+  if(previewBus){stopPreview();return}
+  previewBus=ac.createGain();previewBus.connect(master);
+  const bus=previewBus,spr=1/arpCfg.start,n=Math.min(160,ARP.chords.length*arpCfg.tpc),t0=ac.currentTime+.05;
+  arpRand.length=0;
+  for(let i=0;i<n;i++){
+    const t=t0+i*spr;
+    voice(arpNote(i),t,spr*1.6,.32,7,arpCfg.timbre,bus);
+    if(arpCfg.bass&&i%arpCfg.tpc===0)voice(arpChord(i).bass,t,spr*(arpCfg.tpc-.5),.2,4,arpCfg.timbre,bus);
+  }
+  $('hear').textContent='Stop';$('hear').classList.add('red');
+  setTimeout(()=>{if(previewBus===bus)stopPreview()},(n*spr+1)*1000);
+});
+function openCfg(){fillForm();cfgEl.classList.add('on');$('done').focus({preventScroll:true})}
+function closeCfg(){stopPreview();cfgEl.classList.remove('on');$('tip').textContent=mode==='arp'?arpSummary():$('tip').textContent;reset()}
+custEl.addEventListener('click',()=>{initAudio();openCfg()});
+$('done').addEventListener('click',closeCfg);
+addEventListener('keydown',e=>{if(e.key==='Escape'&&cfgEl.classList.contains('on'))closeCfg()});
+renderArp();
 setMode(mode);
 requestAnimationFrame(frame);
 if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).catch(()=>{});
