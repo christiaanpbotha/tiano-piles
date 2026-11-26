@@ -19,12 +19,20 @@
    IDEA: a piano keyboard laid on its back, keys falling toward you
    PICTURE: the four-lane board itself, full screen
    COLOUR and TYPE: ivory white, piano black, one red accent; Big Shoulders for numbers
-   LAYOUT: canvas fills the viewport, score floats at top, overlay card on game over */
+   LAYOUT: board fills the viewport, score floats at top, overlay card on game over */
 :root{color-scheme:light;--red:#e8304a;--ink:#111114}
 *{box-sizing:border-box;margin:0}
 html,body{height:100%;overflow:hidden;background:#000;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
 body{font:16px/1.4 "Instrument Sans",system-ui,sans-serif;color:var(--ink)}
-#c{position:fixed;inset:0;width:100vw;height:100dvh;display:block}
+#board{position:fixed;inset:0;overflow:hidden;background:#fbfbf8 linear-gradient(90deg,transparent calc(25% - 1px),#e2e2e6 0 25%,transparent 0 calc(50% - 1px),#e2e2e6 0 50%,transparent 0 calc(75% - 1px),#e2e2e6 0 75%,transparent 0);touch-action:none}
+.t{position:absolute;left:0;top:0;width:25%;height:25%;padding:1px;will-change:transform;contain:strict;display:none}
+.t.on{display:block}
+.t>i{display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:#111114;box-shadow:inset 0 4px 0 rgba(255,255,255,.1);font:700 clamp(14px,5vw,22px) "Instrument Sans",sans-serif;font-style:normal;color:#fff}
+.t.hit>i{background:#d8d8de;box-shadow:none}
+.t.start>i{background:var(--red)}
+.t.bad>i{background:var(--red);animation:blink .28s steps(1) infinite}
+@keyframes blink{50%{background:#111114}}
+#ver{position:fixed;right:8px;bottom:6px;font-size:11px;color:#b5b5bc;pointer-events:none}
 #hud{position:fixed;top:max(14px,env(safe-area-inset-top));left:0;right:0;text-align:center;pointer-events:none}
 #score{font:900 64px/1 "Big Shoulders Display",Impact,sans-serif;color:var(--red);-webkit-text-stroke:3px #fff;paint-order:stroke fill;text-shadow:0 2px 0 rgba(0,0,0,.08)}
 #tps{margin-top:6px;display:inline-block;font:700 15px/1 "Instrument Sans",sans-serif;font-variant-numeric:tabular-nums;color:#fff;background:rgba(17,17,20,.82);padding:5px 10px;border-radius:99px}
@@ -43,7 +51,7 @@ body{font:16px/1.4 "Instrument Sans",system-ui,sans-serif;color:var(--ink)}
 </style>
 </head>
 <body>
-<canvas id="c"></canvas>
+<div id="board"></div><div id="ver">v4</div>
 <div id="hud"><div id="score">0</div><div id="tps">2.6 tiles/s</div><div id="best">Best 0</div></div>
 <div id="over"><div class="card">
   <h2>Score</h2>
@@ -89,16 +97,13 @@ function playFail(){
   for(const f of [92,98]){const o=ac.createOscillator();o.type='sawtooth';o.frequency.setValueAtTime(f,t);o.frequency.exponentialRampToValueAtTime(f*.6,t+.5);o.connect(g);o.start(t);o.stop(t+.62)}
 }
 
-// ---------- Canvas ----------
-const cv=document.getElementById('c');
-const ctx=cv.getContext('2d',{alpha:false});
+// ---------- Board: a small pool of tiles moved with GPU transforms ----------
+const board=document.getElementById('board');
+const POOL=8,tiles=[],tileCls=[],tileTxt=[];
+for(let k=0;k<POOL;k++){const d=document.createElement('div');d.className='t';d.appendChild(document.createElement('i'));board.appendChild(d);tiles.push(d);tileCls.push('');tileTxt.push('')}
+const badCell=document.createElement('div');badCell.className='t bad';badCell.appendChild(document.createElement('i'));board.appendChild(badCell);
 let W=0,H=0,laneW=0,rowH=0;
-function resize(){
-  const dpr=Math.min(window.devicePixelRatio||1,2);
-  W=cv.clientWidth;H=cv.clientHeight;
-  cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
-  ctx.setTransform(dpr,0,0,dpr,0,0);laneW=W/4;rowH=H/4;
-}
+function resize(){W=board.clientWidth;H=board.clientHeight;laneW=W/4;rowH=H/4}
 addEventListener('resize',resize);resize();
 
 // ---------- State ----------
@@ -153,8 +158,9 @@ function press(l,y){
 }
 
 // ---------- Input ----------
-cv.addEventListener('pointerdown',e=>{
+board.addEventListener('pointerdown',e=>{
   e.preventDefault();
+  if(!laneW)resize();
   press(Math.min(3,Math.max(0,(e.clientX/laneW)|0)),e.clientY);
 },{passive:false});
 const KEYS={KeyD:0,KeyF:1,KeyJ:2,KeyK:3,Digit1:0,Digit2:1,Digit3:2,Digit4:3};
@@ -164,7 +170,7 @@ addEventListener('keydown',e=>{
   else if((e.code==='Space'||e.code==='Enter')&&state==='over'&&over.classList.contains('on')){e.preventDefault();reset()}
 });
 document.getElementById('again').addEventListener('click',()=>{initAudio();reset()});
-['touchstart','touchmove','gesturestart','dblclick'].forEach(ev=>document.addEventListener(ev,e=>{if(e.target===cv)e.preventDefault()},{passive:false}));
+['touchstart','touchmove','gesturestart','dblclick'].forEach(ev=>document.addEventListener(ev,e=>{if(board.contains(e.target))e.preventDefault()},{passive:false}));
 
 // ---------- Loop ----------
 let last=performance.now();
@@ -176,42 +182,34 @@ function frame(t){
   }else if(state==='over'){
     offset+=(target-offset)*Math.min(1,dt*12);
   }
-  draw(t);
+  draw();
   requestAnimationFrame(frame);
 }
-function draw(t){
-  ctx.fillStyle='#fbfbf8';ctx.fillRect(0,0,W,H);
-  ctx.fillStyle='#e2e2e6';
-  for(let i=1;i<4;i++)ctx.fillRect(Math.round(i*laneW),0,1,H);
-  const first=Math.max(0,Math.floor(offset)),lastR=Math.ceil(offset+4);
-  const blink=state==='over'&&((t-failT)/140|0)%2===0;
-  for(let i=first;i<=lastR;i++){
-    const yb=H-(i-offset)*rowH,yt=yb-rowH,x=lane(i)*laneW;
-    if(i===failR&&state==='over'&&failL===lane(i)){
-      ctx.fillStyle=blink?'#e8304a':'#111114';ctx.fillRect(x+1,yt+1,laneW-2,rowH-2);continue;
-    }
-    if(i<next){
-      ctx.fillStyle='#d8d8de';ctx.fillRect(x+1,yt+1,laneW-2,rowH-2);
-    }else{
-      ctx.fillStyle=(i===0&&state==='ready')?'#e8304a':'#111114';
-      ctx.fillRect(x+1,yt+1,laneW-2,rowH-2);
-      ctx.fillStyle='rgba(255,255,255,.10)';ctx.fillRect(x+1,yt+1,laneW-2,4);
-      if(i===0&&state==='ready'){
-        ctx.fillStyle='#fff';ctx.font='700 '+Math.round(Math.min(laneW*.22,22))+'px "Instrument Sans",sans-serif';
-        ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('START',x+laneW/2,yt+rowH/2);
-      }
-    }
+function setTile(k,i,cls,txt){
+  const d=tiles[k];
+  if(tileCls[k]!==cls){tileCls[k]=cls;d.className=cls}
+  if(tileTxt[k]!==txt){tileTxt[k]=txt;d.firstChild.textContent=txt}
+  d.style.transform='translate3d('+(lane(i)*laneW).toFixed(1)+'px,'+(H-(i+1-offset)*rowH).toFixed(1)+'px,0)';
+}
+function draw(){
+  const first=Math.max(0,Math.floor(offset));
+  for(let k=0;k<POOL;k++){
+    const i=first+k;
+    if(k>5){if(tileCls[k]!=='t'){tileCls[k]='t';tiles[k].className='t'}continue}
+    let cls='t on';
+    if(state==='over'&&i===failR&&failL===lane(i))cls='t on bad';
+    else if(i<next)cls='t on hit';
+    else if(i===0&&state==='ready')cls='t on start';
+    setTile(k,i,cls,(i===0&&state==='ready')?'START':'');
   }
-  // wrong-lane tap: show the empty cell flashing red
   if(state==='over'&&failR>=0&&failL!==lane(failR)){
-    const yb=H-(failR-offset)*rowH;
-    ctx.fillStyle=blink?'#e8304a':'rgba(232,48,74,.35)';
-    ctx.fillRect(failL*laneW+1,yb-rowH+1,laneW-2,rowH-2);
-  }
+    badCell.style.display='block';
+    badCell.style.transform='translate3d('+(failL*laneW).toFixed(1)+'px,'+(H-(failR+1-offset)*rowH).toFixed(1)+'px,0)';
+  }else badCell.style.display='none';
 }
 reset();
 requestAnimationFrame(frame);
-if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
+if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).catch(()=>{});
 }
 </script>
 </body>
