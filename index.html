@@ -44,13 +44,13 @@ body{font:16px/1.4 "Instrument Sans",system-ui,sans-serif;color:var(--ink)}
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><div id="score">0</div><div id="tps">0.0 taps/s</div><div id="best">Best 0</div></div>
+<div id="hud"><div id="score">0</div><div id="tps">2.6 tiles/s</div><div id="best">Best 0</div></div>
 <div id="over"><div class="card">
   <h2>Score</h2>
   <div class="big" id="fs">0</div>
   <div class="nb" id="nb">New best!</div>
   <div class="bl" id="fb">Best 0</div>
-  <div class="bl" id="fp">Peak 0.0 taps/s</div>
+  <div class="bl" id="fp">Top speed 2.6 tiles/s</div>
   <button id="again">Play again</button>
   <div class="tip">Bach · Bourrée in E minor, BWV 996</div>
 </div></div>
@@ -91,7 +91,7 @@ function playFail(){
 
 // ---------- Canvas ----------
 const cv=document.getElementById('c');
-const ctx=cv.getContext('2d',{alpha:false,desynchronized:true});
+const ctx=cv.getContext('2d',{alpha:false});
 let W=0,H=0,laneW=0,rowH=0;
 function resize(){
   const dpr=Math.min(window.devicePixelRatio||1,2);
@@ -108,14 +108,11 @@ const over=document.getElementById('over'),fs=document.getElementById('fs'),fb=d
 let best=0;try{best=+localStorage.getItem('bourree-best')||0}catch(e){}
 bestEl.textContent='Best '+best;
 
-// taps per second: hits in the last WIN ms, shown live; peak kept per run
+// speed meter: how many new tiles are falling per second right now
 const tpsEl=document.getElementById('tps'),fp=document.getElementById('fp');
-const WIN=1500,taps=new Float64Array(64);let tHead=0,tCount=0,peak=0,lastTpsDraw=0,shownTps=-1;
-function currentTps(now){
-  let n=0;for(let k=0;k<tCount;k++){if(now-taps[(tHead-1-k+64)%64]<=WIN)n++;else break}
-  return n*1000/WIN;
-}
-function showTps(v){const r=Math.round(v*10);if(r!==shownTps){shownTps=r;tpsEl.textContent=(r/10).toFixed(1)+' taps/s'}}
+let shownTps=-1;
+const speed=()=>BASE+next*INC;
+function showTps(v){const r=Math.round(v*10);if(r!==shownTps){shownTps=r;tpsEl.textContent=(r/10).toFixed(1)+' tiles/s'}}
 let lanes=[],state='ready',offset=0,target=0,next=0,noteIdx=0,failL=-1,failR=-1,failT=0,overTimer=0;
 function lane(i){
   while(lanes.length<=i){
@@ -128,13 +125,11 @@ function lane(i){
 function reset(){
   lanes=[];state='ready';offset=0;next=0;noteIdx=0;failL=failR=-1;
   scoreEl.textContent='0';over.classList.remove('on');
-  tHead=tCount=0;peak=0;showTps(0);
+  showTps(speed());
 }
 function hit(){
   playNote(SONG[noteIdx++%SONG.length]);
-  const now=performance.now();taps[tHead]=now;tHead=(tHead+1)%64;if(tCount<64)tCount++;
-  const v=currentTps(now);if(v>peak)peak=v;
-  next++;scoreEl.textContent=next;
+  next++;scoreEl.textContent=next;showTps(speed());
   if(state==='ready')state='play';
 }
 function lose(l,r,missed){
@@ -143,7 +138,7 @@ function lose(l,r,missed){
   const isBest=next>best;
   if(isBest){best=next;try{localStorage.setItem('bourree-best',best)}catch(e){}}
   bestEl.textContent='Best '+best;
-  fs.textContent=next;fb.textContent='Best '+best;fp.textContent='Peak '+peak.toFixed(1)+' taps/s';nb.classList.toggle('on',isBest&&best>0);
+  fs.textContent=next;fb.textContent='Best '+best;fp.textContent='Top speed '+speed().toFixed(1)+' tiles/s';nb.classList.toggle('on',isBest&&best>0);
   clearTimeout(overTimer);overTimer=setTimeout(()=>{over.classList.add('on');document.getElementById('again').focus({preventScroll:true})},800);
 }
 function press(l,y){
@@ -174,11 +169,10 @@ document.getElementById('again').addEventListener('click',()=>{initAudio();reset
 // ---------- Loop ----------
 let last=performance.now();
 function frame(t){
-  const dt=Math.min((t-last)/1000,.05);last=t;
+  const dt=Math.max(0,Math.min((t-last)/1000,.05));last=t;
   if(state==='play'){
-    offset+=(BASE+next*INC)*dt;
+    offset+=speed()*dt;
     if(offset>next+1)lose(lane(next),next,true);
-    if(t-lastTpsDraw>100){lastTpsDraw=t;showTps(currentTps(t))}
   }else if(state==='over'){
     offset+=(target-offset)*Math.min(1,dt*12);
   }
