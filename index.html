@@ -16,8 +16,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=Instrument+Sans:wght@500;700&display=swap" rel="stylesheet">
 <style>
 /* VOICE: quick, clean, arcade — nothing between you and the keys
-   IDEA: a piano keyboard laid on its back, keys falling toward you
-   PICTURE: the four-lane board itself, full screen
+   IDEA: a piano roll laid on its back, the score falling toward you in real rhythm
+   PICTURE: the four-lane board itself, full screen; long notes are tall tiles
    COLOUR and TYPE: ivory white, piano black, one red accent; Big Shoulders for numbers
    LAYOUT: board fills the viewport, score floats at top, overlay card on game over */
 :root{color-scheme:light;--red:#e8304a;--ink:#111114}
@@ -25,50 +25,59 @@
 html,body{height:100%;overflow:hidden;background:#000;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
 body{font:16px/1.4 "Instrument Sans",system-ui,sans-serif;color:var(--ink)}
 #board{position:fixed;inset:0;overflow:hidden;background:#fbfbf8 linear-gradient(90deg,transparent calc(25% - 1px),#e2e2e6 0 25%,transparent 0 calc(50% - 1px),#e2e2e6 0 50%,transparent 0 calc(75% - 1px),#e2e2e6 0 75%,transparent 0);touch-action:none}
-.t{position:absolute;left:0;top:0;width:25%;height:25%;padding:1px;will-change:transform;contain:strict;display:none}
+.t{position:absolute;left:0;top:0;width:25%;height:25%;padding:1px;will-change:transform;display:none}
 .t.on{display:block}
 .t>i{display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:#111114;box-shadow:inset 0 4px 0 rgba(255,255,255,.1);font:700 clamp(14px,5vw,22px) "Instrument Sans",sans-serif;font-style:normal;color:#fff}
+.t.long>i{background-image:linear-gradient(90deg,transparent 47%,rgba(255,255,255,.16) 47% 53%,transparent 53%)}
 .t.hit>i{background:#d8d8de;box-shadow:none}
 .t.start>i{background:var(--red)}
 .t.bad>i{background:var(--red);animation:blink .28s steps(1) infinite}
 @keyframes blink{50%{background:#111114}}
 #ver{position:fixed;right:8px;bottom:6px;font-size:11px;color:#b5b5bc;pointer-events:none}
 #hud{position:fixed;top:max(14px,env(safe-area-inset-top));left:0;right:0;text-align:center;pointer-events:none}
-#score{font:900 64px/1 "Big Shoulders Display",Impact,sans-serif;color:var(--red);-webkit-text-stroke:3px #fff;paint-order:stroke fill;text-shadow:0 2px 0 rgba(0,0,0,.08)}
-#tps{margin-top:6px;display:inline-block;font:700 15px/1 "Instrument Sans",sans-serif;font-variant-numeric:tabular-nums;color:#fff;background:rgba(17,17,20,.82);padding:5px 10px;border-radius:99px}
-#best{margin-top:6px;font-weight:700;font-size:13px;color:#8a8a93}
+#score{font:900 64px/1 "Big Shoulders Display",Impact,sans-serif;color:var(--red);-webkit-text-stroke:3px #fff;paint-order:stroke fill}
+#spd{margin-top:6px;display:inline-block;font:700 15px/1 "Instrument Sans",sans-serif;font-variant-numeric:tabular-nums;color:#fff;background:rgba(17,17,20,.82);padding:5px 10px;border-radius:99px}
+#best{margin-top:6px;font-weight:700;font-size:13px;color:#8a8a93;font-variant-numeric:tabular-nums}
 #over{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(10,10,14,.55);padding:24px}
 #over.on{display:flex}
-.card{width:min(320px,100%);background:#fff;border-radius:18px;padding:28px 24px 22px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+.card{width:min(320px,100%);background:#fff;border-radius:18px;padding:26px 22px 20px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.35)}
 .card h2{font:700 15px/1 "Instrument Sans",sans-serif;color:#8a8a93}
-.big{font:900 88px/1 "Big Shoulders Display",Impact,sans-serif;color:var(--ink);margin:8px 0 4px}
-.nb{display:none;margin:0 auto 6px;width:max-content;background:var(--red);color:#fff;font-weight:700;font-size:13px;padding:4px 10px;border-radius:99px}
+.big{font:900 84px/1 "Big Shoulders Display",Impact,sans-serif;color:var(--ink);margin:8px 0 6px}
+.badges{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:10px}
+.nb{display:none;background:var(--red);color:#fff;font-weight:700;font-size:13px;padding:4px 10px;border-radius:99px}
 .nb.on{display:block}
-.bl{color:#6b6b74;font-size:15px}
-.card button{margin-top:20px;width:100%;min-height:52px;border:0;border-radius:12px;background:var(--ink);color:#fff;font:700 17px "Instrument Sans",sans-serif;cursor:pointer}
+.rows{display:grid;grid-template-columns:1fr auto;gap:6px 12px;text-align:left;font-size:15px;color:#55555e;border-top:1px solid #ececf0;padding-top:12px}
+.rows b{color:var(--ink);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.card button{margin-top:18px;width:100%;min-height:52px;border:0;border-radius:12px;background:var(--ink);color:#fff;font:700 17px "Instrument Sans",sans-serif;cursor:pointer}
 .card button:focus-visible{outline:3px solid var(--red);outline-offset:2px}
 .tip{margin-top:12px;font-size:13px;color:#9a9aa3}
 </style>
 </head>
 <body>
-<div id="board"></div><div id="ver">v4</div>
-<div id="hud"><div id="score">0</div><div id="tps">2.6 tiles/s</div><div id="best">Best 0</div></div>
+<div id="board"></div><div id="ver">v5</div>
+<div id="hud"><div id="score">0</div><div id="spd">3.0 tiles/s</div><div id="best">Best 0 · 0.0 tiles/s</div></div>
 <div id="over"><div class="card">
   <h2>Score</h2>
   <div class="big" id="fs">0</div>
-  <div class="nb" id="nb">New best!</div>
-  <div class="bl" id="fb">Best 0</div>
-  <div class="bl" id="fp">Top speed 2.6 tiles/s</div>
+  <div class="badges"><span class="nb" id="nbS">New best score</span><span class="nb" id="nbV">New top speed</span></div>
+  <div class="rows">
+    <span>Best score</span><b id="fBest">0</b>
+    <span>Speed reached</span><b id="fSpd">3.0 tiles/s</b>
+    <span>Best speed</span><b id="fBestSpd">0.0 tiles/s</b>
+  </div>
   <button id="again">Play again</button>
   <div class="tip">Bach · Bourrée in E minor, BWV 996</div>
 </div></div>
 <script>
 {
-// ---------- Music: Bach, Bourrée in E minor (melody line), MIDI numbers ----------
-const A=[64,66, 67,66,64,63,64,66, 59,61,63,64,62,60, 59,57,55,54,55,57, 59,57,55,54,52];
-const A2=[64,66, 67,66,64,63,64,66, 59,61,63,64,62,60, 59,57,55,54,55,57, 59,62,57,55];
-const B=[67,69, 71,69,67,66,67,69, 62,64,66,67,66,64, 63,64,66,67,69,66, 67,66,64,63,64];
-const SONG=[...A,...A2,...B,...A];
+// ---------- Music ----------
+// Bach, Bourrée in E minor (BWV 996), both voices, form A A B B, looped.
+// One entry per tile: [length in eighth notes, melody [[midi,offset,dur]], bass [[midi,offset,dur]]]
+// Offsets and durations are in eighth notes. Eighth = 1 tile tall, quarter = 2, half = 4.
+// Source: ABC transcription by Laurie Griffiths (musicaviva.com).
+const SONG=[[1,[[64,0,1]],[[43,0,1]]],[1,[[66,0,1]],[[42,0,1]]],[2,[[67,0,2]],[[40,0,2]]],[1,[[66,0,1]],[[45,0,2]]],[1,[[64,0,1]],[]],[2,[[63,0,2]],[[47,0,2]]],[1,[[64,0,1]],[[45,0,2]]],[1,[[66,0,1]],[]],[2,[[59,0,2]],[[43,0,2]]],[1,[[61,0,1]],[[42,0,2]]],[1,[[63,0,1]],[]],[2,[[64,0,2]],[[40,0,2]]],[1,[[62,0,1]],[[42,0,2]]],[1,[[60,0,1]],[]],[2,[[59,0,2]],[[43,0,2]]],[1,[[57,0,1]],[[45,0,2]]],[1,[[55,0,1]],[]],[2,[[54,0,2]],[[47,0,2]]],[1,[[55,0,1]],[[45,0,2]]],[1,[[57,0,1]],[]],[1,[[59,0,1]],[[43,0,2]]],[1,[[57,0,1]],[]],[1,[[55,0,1]],[[47,0,2]]],[1,[[54,0,1]],[]],[2,[[52,0,2]],[[40,0,1],[42,1,1]]],[1,[[64,0,1]],[[43,0,1]]],[1,[[66,0,1]],[[42,0,1]]],[2,[[67,0,2]],[[40,0,2]]],[1,[[66,0,1]],[[45,0,2]]],[1,[[64,0,1]],[]],[2,[[63,0,2]],[[47,0,2]]],[1,[[64,0,1]],[[45,0,2]]],[1,[[66,0,1]],[]],[2,[[59,0,2]],[[43,0,2]]],[1,[[61,0,1]],[[42,0,2]]],[1,[[63,0,1]],[]],[2,[[64,0,2]],[[40,0,2]]],[1,[[62,0,1]],[[42,0,2]]],[1,[[60,0,1]],[]],[2,[[59,0,2]],[[43,0,2]]],[1,[[57,0,1]],[[48,0,2]]],[1,[[55,0,1]],[]],[2,[[54,0,2]],[[50,0,2]]],[1,[[50,0,1]],[[38,0,2]]],[1,[[55,0,1]],[]],[6,[[55,0,6]],[[43,0,6],[47,0,6],[50,0,6]]],[1,[[64,0,1]],[[43,0,1]]],[1,[[66,0,1]],[[42,0,1]]],[2,[[67,0,2]],[[40,0,2]]],[1,[[66,0,1]],[[45,0,2]]],[1,[[64,0,1]],[]],[2,[[63,0,2]],[[47,0,2]]],[1,[[64,0,1]],[[45,0,2]]],[1,[[66,0,1]],[]],[2,[[59,0,2]],[[43,0,2]]],[1,[[61,0,1]],[[42,0,2]]],[1,[[63,0,1]],[]],[2,[[64,0,2]],[[40,0,2]]],[1,[[62,0,1]],[[42,0,2]]],[1,[[60,0,1]],[]],[2,[[59,0,2]],[[43,0,2]]],[1,[[57,0,1]],[[45,0,2]]],[1,[[55,0,1]],[]],[2,[[54,0,2]],[[47,0,2]]],[1,[[55,0,1]],[[45,0,2]]],[1,[[57,0,1]],[]],[1,[[59,0,1]],[[43,0,2]]],[1,[[57,0,1]],[]],[1,[[55,0,1]],[[47,0,2]]],[1,[[54,0,1]],[]],[2,[[52,0,2]],[[40,0,1],[42,1,1]]],[1,[[64,0,1]],[[43,0,1]]],[1,[[66,0,1]],[[42,0,1]]],[2,[[67,0,2]],[[40,0,2]]],[1,[[66,0,1]],[[45,0,2]]],[1,[[64,0,1]],[]],[2,[[63,0,2]],[[47,0,2]]],[1,[[64,0,1]],[[45,0,2]]],[1,[[66,0,1]],[]],[2,[[59,0,2]],[[43,0,2]]],[1,[[61,0,1]],[[42,0,2]]],[1,[[63,0,1]],[]],[2,[[64,0,2]],[[40,0,2]]],[1,[[62,0,1]],[[42,0,2]]],[1,[[60,0,1]],[]],[2,[[59,0,2]],[[43,0,2]]],[1,[[57,0,1]],[[48,0,2]]],[1,[[55,0,1]],[]],[2,[[54,0,2]],[[50,0,2]]],[1,[[50,0,1]],[[38,0,2]]],[1,[[55,0,1]],[]],[6,[[55,0,6]],[[43,0,6],[47,0,6],[50,0,6]]],[1,[[59,0,1]],[[43,0,2]]],[1,[[55,0,1]],[]],[2,[[62,0,2]],[[42,0,2]]],[1,[[57,0,1]],[[50,0,2]]],[1,[[60,0,1]],[]],[2,[[59,0,2]],[[43,0,2]]],[1,[[67,0,1]],[[47,0,2]]],[1,[[62,0,1]],[]],[2,[[64,0,2]],[[48,0,2]]],[1,[[59,0,1]],[[44,0,2]]],[1,[[62,0,1]],[]],[2,[[60,0,2]],[[45,0,2]]],[1,[[59,0,1]],[[50,0,2]]],[1,[[57,0,1]],[]],[2,[[56,0,2]],[[52,0,2]]],[1,[[57,0,1]],[[45,0,2]]],[1,[[59,0,1]],[]],[2,[[60,0,2]],[[52,0,2]]],[1,[[59,0,1]],[[40,0,2]]],[1,[[57,0,1]],[]],[6,[[57,0,6]],[[45,0,1],[47,1,1],[45,2,1],[43,3,1],[42,4,2]]],[1,[[62,0,1]],[[50,0,2]]],[1,[[57,0,1]],[]],[2,[[59,0,2]],[[55,0,2]]],[1,[[67,0,1]],[[47,0,2]]],[1,[[62,0,1]],[]],[2,[[64,0,2]],[[48,0,2]]],[1,[[59,0,1]],[[44,0,2]]],[1,[[62,0,1]],[]],[2,[[60,0,2]],[[45,0,2]]],[1,[[69,0,1]],[[49,0,2]]],[1,[[64,0,1]],[]],[2,[[66,0,2]],[[50,0,2]]],[1,[[61,0,1]],[[46,0,2]]],[1,[[64,0,1]],[]],[2,[[62,0,2]],[[47,0,2]]],[1,[[61,0,1]],[[52,0,2]]],[1,[[59,0,1]],[]],[1,[[58,0,0.5],[59,0.5,0.5]],[[54,0,2]]],[1,[[58,0,0.5],[59,0.5,0.5]],[]],[1,[[58,0,0.5],[59,0.5,0.5]],[[42,0,2]]],[1,[[58,0,0.5],[59,0.5,0.5]],[]],[6,[[59,0,6]],[[47,0,1],[46,1,1],[47,2,1],[49,3,1],[51,4,2]]],[1,[[71,0,1]],[[47,0,2]]],[1,[[66,0,1]],[]],[2,[[68,0,2]],[[52,0,2]]],[1,[[66,0,1]],[[50,0,2]]],[1,[[64,0,1]],[]],[2,[[69,0,2]],[[49,0,2]]],[1,[[64,0,1]],[[45,0,2]]],[1,[[67,0,1]],[]],[2,[[66,0,2]],[[50,0,2]]],[1,[[64,0,1]],[[48,0,2]]],[1,[[62,0,1]],[]],[2,[[67,0,2]],[[47,0,2]]],[1,[[62,0,1]],[[43,0,2]]],[1,[[65,0,1]],[]],[2,[[64,0,2]],[[48,0,2]]],[1,[[69,0,1]],[[47,0,2]]],[1,[[64,0,1]],[]],[2,[[66,0,2]],[[45,0,2]]],[1,[[61,0,1]],[[46,0,2]]],[1,[[64,0,1]],[]],[2,[[63,0,2]],[[47,0,5]]],[6,[[59,0,6]],[[48,3,1],[47,4,1],[45,5,1]]],[1,[[64,0,1]],[[44,0,2]]],[1,[[59,0,1]],[]],[2,[[60,0,2]],[[45,0,1],[52,1,1]]],[1,[[62,0,1]],[[54,0,2]]],[1,[[57,0,1]],[]],[2,[[59,0,2]],[[43,0,1],[51,1,1]]],[1,[[60,0,1]],[[52,0,2]]],[1,[[55,0,1]],[]],[2,[[57,0,2]],[[42,0,1],[49,1,1]]],[1,[[59,0,1]],[[51,0,2]]],[1,[[54,0,1]],[]],[2,[[55,0,2]],[[40,0,2]]],[1,[[54,0,1]],[[45,0,2]]],[1,[[52,0,1]],[]],[2,[[51,0,2]],[[47,0,2]]],[1,[[52,0,1]],[[45,0,2]]],[1,[[54,0,1]],[]],[2,[[55,0,2]],[[47,0,4]]],[1,[[54,0,1]],[]],[1,[[52,0,1]],[]],[4,[[52,0,4]],[[40,0,4]]],[1,[[59,0,1]],[[43,0,2]]],[1,[[55,0,1]],[]],[2,[[62,0,2]],[[42,0,2]]],[1,[[57,0,1]],[[50,0,2]]],[1,[[60,0,1]],[]],[2,[[59,0,2]],[[43,0,2]]],[1,[[67,0,1]],[[47,0,2]]],[1,[[62,0,1]],[]],[2,[[64,0,2]],[[48,0,2]]],[1,[[59,0,1]],[[44,0,2]]],[1,[[62,0,1]],[]],[2,[[60,0,2]],[[45,0,2]]],[1,[[59,0,1]],[[50,0,2]]],[1,[[57,0,1]],[]],[2,[[56,0,2]],[[52,0,2]]],[1,[[57,0,1]],[[45,0,2]]],[1,[[59,0,1]],[]],[2,[[60,0,2]],[[52,0,2]]],[1,[[59,0,1]],[[40,0,2]]],[1,[[57,0,1]],[]],[6,[[57,0,6]],[[45,0,1],[47,1,1],[45,2,1],[43,3,1],[42,4,2]]],[1,[[62,0,1]],[[50,0,2]]],[1,[[57,0,1]],[]],[2,[[59,0,2]],[[55,0,2]]],[1,[[67,0,1]],[[47,0,2]]],[1,[[62,0,1]],[]],[2,[[64,0,2]],[[48,0,2]]],[1,[[59,0,1]],[[44,0,2]]],[1,[[62,0,1]],[]],[2,[[60,0,2]],[[45,0,2]]],[1,[[69,0,1]],[[49,0,2]]],[1,[[64,0,1]],[]],[2,[[66,0,2]],[[50,0,2]]],[1,[[61,0,1]],[[46,0,2]]],[1,[[64,0,1]],[]],[2,[[62,0,2]],[[47,0,2]]],[1,[[61,0,1]],[[52,0,2]]],[1,[[59,0,1]],[]],[1,[[58,0,0.5],[59,0.5,0.5]],[[54,0,2]]],[1,[[58,0,0.5],[59,0.5,0.5]],[]],[1,[[58,0,0.5],[59,0.5,0.5]],[[42,0,2]]],[1,[[58,0,0.5],[59,0.5,0.5]],[]],[6,[[59,0,6]],[[47,0,1],[46,1,1],[47,2,1],[49,3,1],[51,4,2]]],[1,[[71,0,1]],[[47,0,2]]],[1,[[66,0,1]],[]],[2,[[68,0,2]],[[52,0,2]]],[1,[[66,0,1]],[[50,0,2]]],[1,[[64,0,1]],[]],[2,[[69,0,2]],[[49,0,2]]],[1,[[64,0,1]],[[45,0,2]]],[1,[[67,0,1]],[]],[2,[[66,0,2]],[[50,0,2]]],[1,[[64,0,1]],[[48,0,2]]],[1,[[62,0,1]],[]],[2,[[67,0,2]],[[47,0,2]]],[1,[[62,0,1]],[[43,0,2]]],[1,[[65,0,1]],[]],[2,[[64,0,2]],[[48,0,2]]],[1,[[69,0,1]],[[47,0,2]]],[1,[[64,0,1]],[]],[2,[[66,0,2]],[[45,0,2]]],[1,[[61,0,1]],[[46,0,2]]],[1,[[64,0,1]],[]],[2,[[63,0,2]],[[47,0,5]]],[6,[[59,0,6]],[[48,3,1],[47,4,1],[45,5,1]]],[1,[[64,0,1]],[[44,0,2]]],[1,[[59,0,1]],[]],[2,[[60,0,2]],[[45,0,1],[52,1,1]]],[1,[[62,0,1]],[[54,0,2]]],[1,[[57,0,1]],[]],[2,[[59,0,2]],[[43,0,1],[51,1,1]]],[1,[[60,0,1]],[[52,0,2]]],[1,[[55,0,1]],[]],[2,[[57,0,2]],[[42,0,1],[49,1,1]]],[1,[[59,0,1]],[[51,0,2]]],[1,[[54,0,1]],[]],[2,[[55,0,2]],[[40,0,2]]],[1,[[54,0,1]],[[45,0,2]]],[1,[[52,0,1]],[]],[2,[[51,0,2]],[[47,0,2]]],[1,[[52,0,1]],[[45,0,2]]],[1,[[54,0,1]],[]],[2,[[55,0,2]],[[47,0,4]]],[1,[[54,0,1]],[]],[1,[[52,0,1]],[]],[4,[[52,0,4]],[[40,0,4]]]];
+const N=SONG.length,STARTS=new Float64Array(N);let LOOP=0;
+for(let k=0;k<N;k++){STARTS[k]=LOOP;LOOP+=SONG[k][0]}
 const FREQ=new Float32Array(128);for(let m=0;m<128;m++)FREQ[m]=440*Math.pow(2,(m-69)/12);
 
 // ---------- Audio ----------
@@ -77,90 +86,110 @@ function initAudio(){
   if(ac){if(ac.state==='suspended')ac.resume();return}
   const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
   try{ac=new AC({latencyHint:'interactive'})}catch(e){ac=new AC()}
-  master=ac.createGain();master.gain.value=.55;
-  const comp=ac.createDynamicsCompressor();master.connect(comp);comp.connect(ac.destination);
+  master=ac.createGain();master.gain.value=.6;
+  const comp=ac.createDynamicsCompressor();comp.threshold.value=-14;comp.ratio.value=4;
+  master.connect(comp);comp.connect(ac.destination);
 }
-function playNote(m){
-  if(!ac)return;const t=ac.currentTime,f=FREQ[m];
-  const g=ac.createGain();g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.5,t+.004);
-  g.gain.exponentialRampToValueAtTime(.18,t+.15);g.gain.exponentialRampToValueAtTime(.0005,t+1.3);g.connect(master);
-  const o1=ac.createOscillator();o1.type='triangle';o1.frequency.value=f;o1.connect(g);
-  const o2=ac.createOscillator();o2.type='sine';o2.frequency.value=f*2;
-  const g2=ac.createGain();g2.gain.value=.25;o2.connect(g2);g2.connect(g);
-  const o3=ac.createOscillator();o3.type='sine';o3.frequency.value=f/2;
-  const g3=ac.createGain();g3.gain.value=.35;o3.connect(g3);g3.connect(g);
-  o1.start(t);o2.start(t);o3.start(t);o1.stop(t+1.35);o2.stop(t+1.35);o3.stop(t+1.35);
+// A plucked, harpsichord-like voice. Length follows the note's real duration at the current speed,
+// so the music stays clean and in time however fast the tiles fall.
+function voice(m,t,len,vel,bright){
+  const f=FREQ[m],end=t+Math.max(.07,len),rel=Math.min(.12,len*.5+.03);
+  const g=ac.createGain(),lp=ac.createBiquadFilter();
+  lp.type='lowpass';lp.Q.value=.7;
+  lp.frequency.setValueAtTime(Math.min(12000,f*bright),t);
+  lp.frequency.exponentialRampToValueAtTime(Math.max(f*1.5,300),t+Math.min(.5,len+.1));
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vel,t+.004);
+  g.gain.setTargetAtTime(vel*.35,t+.004,.09+Math.min(len,.6)*.25);
+  g.gain.setTargetAtTime(0,end,rel/3);
+  const o1=ac.createOscillator();o1.type='sawtooth';o1.frequency.value=f;
+  const o2=ac.createOscillator();o2.type='triangle';o2.frequency.value=f;o2.detune.value=4;
+  o1.connect(lp);o2.connect(lp);lp.connect(g);g.connect(master);
+  const stop=end+rel+.05;o1.start(t);o2.start(t);o1.stop(stop);o2.stop(stop);
+}
+function playTile(k,spd){
+  if(!ac)return;
+  const t0=ac.currentTime+.005,spr=1/spd,[,mel,bass]=SONG[k];
+  for(const [m,o,d] of mel)voice(m,t0+o*spr,d*spr*.92,.34,7);
+  for(const [m,o,d] of bass)voice(m,t0+o*spr,d*spr*.9,.24,5);
 }
 function playFail(){
   if(!ac)return;const t=ac.currentTime;
-  const g=ac.createGain();g.gain.setValueAtTime(.4,t);g.gain.exponentialRampToValueAtTime(.001,t+.6);g.connect(master);
+  const g=ac.createGain();g.gain.setValueAtTime(.35,t);g.gain.exponentialRampToValueAtTime(.001,t+.6);g.connect(master);
   for(const f of [92,98]){const o=ac.createOscillator();o.type='sawtooth';o.frequency.setValueAtTime(f,t);o.frequency.exponentialRampToValueAtTime(f*.6,t+.5);o.connect(g);o.start(t);o.stop(t+.62)}
 }
 
-// ---------- Board: a small pool of tiles moved with GPU transforms ----------
+// ---------- Tiles: index i -> song entry, start row, length, lane ----------
+const tileK=i=>i%N;
+const tileS=i=>Math.floor(i/N)*LOOP+STARTS[i%N];
+const tileL=i=>SONG[i%N][0];
+let lanes=[];
+function lane(i){
+  while(lanes.length<=i){
+    const p=lanes.length?lanes[lanes.length-1]:-1;
+    let l=Math.random()*4|0;if(l===p)l=(l+1+(Math.random()*3|0))%4;
+    lanes.push(l);
+  }
+  return lanes[i];
+}
+
+// ---------- Board: a pool of tiles moved with GPU transforms ----------
 const board=document.getElementById('board');
-const POOL=8,tiles=[],tileCls=[],tileTxt=[];
-for(let k=0;k<POOL;k++){const d=document.createElement('div');d.className='t';d.appendChild(document.createElement('i'));board.appendChild(d);tiles.push(d);tileCls.push('');tileTxt.push('')}
+const POOL=14,els=[],elCls=[],elTxt=[],elLen=[];
+for(let k=0;k<POOL;k++){const d=document.createElement('div');d.className='t';d.appendChild(document.createElement('i'));board.appendChild(d);els.push(d);elCls.push('t');elTxt.push('');elLen.push(1)}
 const badCell=document.createElement('div');badCell.className='t bad';badCell.appendChild(document.createElement('i'));board.appendChild(badCell);
 let W=0,H=0,laneW=0,rowH=0;
 function resize(){W=board.clientWidth;H=board.clientHeight;laneW=W/4;rowH=H/4}
 addEventListener('resize',resize);resize();
 
 // ---------- State ----------
-const BASE=2.6,INC=.016;   // rows per second, and speed gained per tile
-const scoreEl=document.getElementById('score'),bestEl=document.getElementById('best');
-const over=document.getElementById('over'),fs=document.getElementById('fs'),fb=document.getElementById('fb'),nb=document.getElementById('nb');
-let best=0;try{best=+localStorage.getItem('bourree-best')||0}catch(e){}
-bestEl.textContent='Best '+best;
-
-// speed meter: how many new tiles are falling per second right now
-const tpsEl=document.getElementById('tps'),fp=document.getElementById('fp');
-let shownTps=-1;
+const BASE=3,INC=.012;   // rows (eighth notes) per second, and speed gained per tile
+const $=id=>document.getElementById(id);
+const scoreEl=$('score'),spdEl=$('spd'),bestEl=$('best'),over=$('over');
+let best=0,bestSpd=0;
+try{best=+localStorage.getItem('bourree-best')||0;bestSpd=+localStorage.getItem('bourree-best-speed')||0}catch(e){}
+let state='ready',offset=0,target=0,next=0,failL=-1,failR=-1,failLen=1,overTimer=0,shownSpd=-1;
 const speed=()=>BASE+next*INC;
-function showTps(v){const r=Math.round(v*10);if(r!==shownTps){shownTps=r;tpsEl.textContent=(r/10).toFixed(1)+' tiles/s'}}
-let lanes=[],state='ready',offset=0,target=0,next=0,noteIdx=0,failL=-1,failR=-1,failT=0,overTimer=0;
-function lane(i){
-  while(lanes.length<=i){
-    let l=Math.random()*4|0;const p=lanes[lanes.length-1];
-    if(l===p&&Math.random()<.7)l=(l+1+(Math.random()*3|0))%4;
-    lanes.push(l);
-  }
-  return lanes[i];
-}
+function showBest(){bestEl.textContent='Best '+best+' · '+bestSpd.toFixed(1)+' tiles/s'}
+function showSpd(){const r=Math.round(speed()*10);if(r!==shownSpd){shownSpd=r;spdEl.textContent=(r/10).toFixed(1)+' tiles/s'}}
 function reset(){
-  lanes=[];state='ready';offset=0;next=0;noteIdx=0;failL=failR=-1;
-  scoreEl.textContent='0';over.classList.remove('on');
-  showTps(speed());
+  lanes=[];state='ready';offset=0;next=0;failL=failR=-1;
+  scoreEl.textContent='0';over.classList.remove('on');showSpd();showBest();
 }
 function hit(){
-  playNote(SONG[noteIdx++%SONG.length]);
-  next++;scoreEl.textContent=next;showTps(speed());
+  playTile(tileK(next),speed());
+  next++;scoreEl.textContent=next;showSpd();
   if(state==='ready')state='play';
 }
-function lose(l,r,missed){
-  state='over';failL=l;failR=r;failT=performance.now();playFail();
-  target=missed?r-.35:offset;
-  const isBest=next>best;
-  if(isBest){best=next;try{localStorage.setItem('bourree-best',best)}catch(e){}}
-  bestEl.textContent='Best '+best;
-  fs.textContent=next;fb.textContent='Best '+best;fp.textContent='Top speed '+speed().toFixed(1)+' tiles/s';nb.classList.toggle('on',isBest&&best>0);
-  clearTimeout(overTimer);overTimer=setTimeout(()=>{over.classList.add('on');document.getElementById('again').focus({preventScroll:true})},800);
+function lose(l,row,len,missed){
+  state='over';failL=l;failR=row;failLen=len;playFail();
+  target=missed?row-.4:offset;
+  const v=speed(),newS=next>best,newV=v>bestSpd&&next>0;
+  if(newS)best=next;if(newV)bestSpd=v;
+  try{localStorage.setItem('bourree-best',best);localStorage.setItem('bourree-best-speed',bestSpd.toFixed(2))}catch(e){}
+  showBest();
+  $('fs').textContent=next;$('fBest').textContent=best;
+  $('fSpd').textContent=v.toFixed(1)+' tiles/s';$('fBestSpd').textContent=bestSpd.toFixed(1)+' tiles/s';
+  $('nbS').classList.toggle('on',newS&&best>0);$('nbV').classList.toggle('on',newV);
+  clearTimeout(overTimer);overTimer=setTimeout(()=>{over.classList.add('on');$('again').focus({preventScroll:true})},800);
+}
+function tileAt(row){              // which tile covers this row (searching near the next tile)
+  for(let i=Math.max(0,next-8);i<next+16;i++){const s=tileS(i);if(s>row)return -1;if(row<s+tileL(i))return i}
+  return -1;
 }
 function press(l,y){
   initAudio();
   if(state==='over')return;
-  const tl=lane(next);
-  if(l===tl&&next-offset<4.05){hit();return}
+  if(l===lane(next)&&tileS(next)-offset<4.05){hit();return}
   if(state==='ready')return;
-  const r=Math.floor(offset+(H-y)/rowH);
-  if(r<next&&lane(r)===l)return;      // tapping an already-played tile is harmless
-  lose(l,r,false);
+  const row=offset+(H-y)/rowH,i=tileAt(row);
+  if(i>=0&&i<next&&lane(i)===l)return;     // tapping a tile you already played is harmless
+  if(i>=0&&lane(i)===l)lose(l,tileS(i),tileL(i),false);
+  else lose(l,Math.floor(row),1,false);
 }
 
 // ---------- Input ----------
 board.addEventListener('pointerdown',e=>{
-  e.preventDefault();
-  if(!laneW)resize();
+  e.preventDefault();if(!laneW)resize();
   press(Math.min(3,Math.max(0,(e.clientX/laneW)|0)),e.clientY);
 },{passive:false});
 const KEYS={KeyD:0,KeyF:1,KeyJ:2,KeyK:3,Digit1:0,Digit2:1,Digit3:2,Digit4:3};
@@ -169,7 +198,7 @@ addEventListener('keydown',e=>{
   if(e.code in KEYS){e.preventDefault();press(KEYS[e.code],H-rowH*.5)}
   else if((e.code==='Space'||e.code==='Enter')&&state==='over'&&over.classList.contains('on')){e.preventDefault();reset()}
 });
-document.getElementById('again').addEventListener('click',()=>{initAudio();reset()});
+$('again').addEventListener('click',()=>{initAudio();reset()});
 ['touchstart','touchmove','gesturestart','dblclick'].forEach(ev=>document.addEventListener(ev,e=>{if(board.contains(e.target))e.preventDefault()},{passive:false}));
 
 // ---------- Loop ----------
@@ -178,33 +207,34 @@ function frame(t){
   const dt=Math.max(0,Math.min((t-last)/1000,.05));last=t;
   if(state==='play'){
     offset+=speed()*dt;
-    if(offset>next+1)lose(lane(next),next,true);
+    if(offset>tileS(next)+1)lose(lane(next),tileS(next),tileL(next),true);
   }else if(state==='over'){
     offset+=(target-offset)*Math.min(1,dt*12);
   }
   draw();
   requestAnimationFrame(frame);
 }
-function setTile(k,i,cls,txt){
-  const d=tiles[k];
-  if(tileCls[k]!==cls){tileCls[k]=cls;d.className=cls}
-  if(tileTxt[k]!==txt){tileTxt[k]=txt;d.firstChild.textContent=txt}
-  d.style.transform='translate3d('+(lane(i)*laneW).toFixed(1)+'px,'+(H-(i+1-offset)*rowH).toFixed(1)+'px,0)';
-}
+function place(d,l,s,len){d.style.transform='translate3d('+(l*laneW).toFixed(1)+'px,'+(H-(s+len-offset)*rowH).toFixed(1)+'px,0)'}
 function draw(){
-  const first=Math.max(0,Math.floor(offset));
-  for(let k=0;k<POOL;k++){
-    const i=first+k;
-    if(k>5){if(tileCls[k]!=='t'){tileCls[k]='t';tiles[k].className='t'}continue}
-    let cls='t on';
-    if(state==='over'&&i===failR&&failL===lane(i))cls='t on bad';
-    else if(i<next)cls='t on hit';
-    else if(i===0&&state==='ready')cls='t on start';
-    setTile(k,i,cls,(i===0&&state==='ready')?'START':'');
+  let k=0;
+  for(let i=Math.max(0,next-8);k<POOL;i++){
+    const s=tileS(i),len=tileL(i);
+    if(s>offset+4.2)break;
+    if(s+len<offset-.1)continue;
+    let cls=len>1?'t on long':'t on';
+    if(state==='over'&&s===failR&&failL===lane(i))cls+=' bad';
+    else if(i<next)cls+=' hit';
+    else if(i===0&&state==='ready')cls+=' start';
+    const d=els[k],txt=(i===0&&state==='ready')?'START':'';
+    if(elCls[k]!==cls){elCls[k]=cls;d.className=cls}
+    if(elTxt[k]!==txt){elTxt[k]=txt;d.firstChild.textContent=txt}
+    if(elLen[k]!==len){elLen[k]=len;d.style.height=(len*25)+'%'}
+    place(d,lane(i),s,len);k++;
   }
-  if(state==='over'&&failR>=0&&failL!==lane(failR)){
-    badCell.style.display='block';
-    badCell.style.transform='translate3d('+(failL*laneW).toFixed(1)+'px,'+(H-(failR+1-offset)*rowH).toFixed(1)+'px,0)';
+  for(;k<POOL;k++)if(elCls[k]!=='t'){elCls[k]='t';els[k].className='t'}
+  const i=state==='over'?tileAt(failR+.01):-1;
+  if(state==='over'&&failR>=0&&!(i>=0&&lane(i)===failL)){
+    badCell.style.display='block';badCell.style.height=(failLen*25)+'%';place(badCell,failL,failR,failLen);
   }else badCell.style.display='none';
 }
 reset();

@@ -1,6 +1,6 @@
 // Offline cache. Always asks the network first (bypassing the browser cache)
 // so a new version shows up on the next open; falls back to the cache offline.
-const CACHE = 'tiano-piles-v4';
+const CACHE = 'tiano-piles-v5';
 const FILES = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-180.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES.map(f => new Request(f, {cache: 'reload'})))).then(() => self.skipWaiting()));
